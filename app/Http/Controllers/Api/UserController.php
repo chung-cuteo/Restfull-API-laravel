@@ -3,22 +3,109 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return 'index';
+        $where = [];
+
+        if ($request->name) {
+            $where[] = ['name', 'like', '%' . $request->name . '%'];
+        }
+
+        $user = User::orderBy('id', 'desc');
+
+        if (!empty($where)) {
+            $user = $user->where($where);
+        }
+
+        $user = $user->get();
+
+        $status = 'get fail';
+
+        if ($user->count() > 0) {
+            $status = 'get success';
+        };
+
+        $reponse = [
+            'status' => $status,
+            'data' => $user,
+        ];
+
+        return $reponse;
     }
 
     public function detail($id)
     {
-        return $id;
+        $user= User::find($id);
+
+        $status = 'not user';
+        if ($user) {
+            $status = 'get success';
+        }
+
+        $reponse = [
+            'status' => $status,
+            'data' => $user,
+
+        ];
+
+        return $reponse;
     }
 
     public function create(Request $request)
     {
-        return $request;
+        $rules = $request->validate(
+            [
+                'name' => 'required|min:5',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|min:5',
+            ],
+            [
+                'name.required' => 'ten phai nhap bat buoc',
+                'name.min' => 'ten phai lon hon 5 ki tu',
+                'email.required' => 'email phai dk nhap',
+                'email.email' => 'email phai dung dinh dang',
+                'name.unique' => 'email phai khong dk trung',
+                'name.required' => 'password phai phai nhap',
+            ]
+        );
+
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+
+        if ($user->id) {
+            $reponse = [
+                'status' => 'update succes',
+                'data' => $user,
+            ];
+        } else {
+            $reponse = [
+                'status' => 'update fail',
+                'data' => $user,
+            ];
+        }
+
+        return $reponse;
+    }
+
+    public function update(Request $request, User $user)
+    {
+        if ($request->methob()) {
+            return $request->all();
+        };
+    }
+
+    public function delete(Request $request, User $user)
+    {
+        return $user;
     }
 }
