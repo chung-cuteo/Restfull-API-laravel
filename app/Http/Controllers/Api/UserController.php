@@ -41,7 +41,7 @@ class UserController extends Controller
 
     public function detail($id)
     {
-        $user= User::find($id);
+        $user = User::find($id);
 
         $status = 'not user';
         if ($user) {
@@ -97,11 +97,55 @@ class UserController extends Controller
         return $reponse;
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
-        if ($request->methob()) {
-            return $request->all();
-        };
+        $user = User::find($id);
+
+        $method =  $request->method();
+
+        if (!$user) {
+            $reponse = [
+                'status' => 'no data',
+                'data' => $user
+            ];
+            return $reponse;
+        } else {
+            if ($method == 'PUT') {
+                $user->name = $request->name;
+                $user->email = $request->email;
+                if ($user->password) {
+                    $user->password = Hash::make($request->password);
+                };
+
+                $user->save();
+
+                $reponse = [
+                    'status' => 'update success',
+                    'data' => $user
+                ];
+
+                return $reponse;
+            } else {
+                if ($request->name) {
+                    $user->name = $request->name;
+                }
+                if ($request->email) {
+                    $user->email = $request->email;
+                }
+                if ($request->password) {
+                    $user->password = $request->password;
+                }
+
+                $user->save();
+
+                $reponse = [
+                    'status' => 'update success',
+                    'data' => $user
+                ];
+
+                return $reponse;
+            };
+        }
     }
 
     public function delete(Request $request, User $user)
