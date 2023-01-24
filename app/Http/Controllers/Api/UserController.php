@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
 class UserController extends Controller
 {
     public function index(Request $request)
@@ -31,9 +31,10 @@ class UserController extends Controller
             $status = 'get success';
         };
 
+        $users = UserResource::collection($user);
         $reponse = [
             'status' => $status,
-            'data' => $user,
+            'data' => $users,
         ];
 
         return $reponse;
